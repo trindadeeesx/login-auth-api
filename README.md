@@ -37,97 +37,127 @@ Esse projeto foi criado para treino e portfólio, com o objetivo de demonstrar h
 1. Clonar o repositório:
 
 ```bash
-git clone https://github.com/trindadeeesx/login-auth-web.git
-cd login-auth-web
+git clone https://github.com/trindadeeesx/login-auth-api.git
+cd login-auth-api
 ```
 
-2. Instale as dependencias:
-
+2. Compile e rode a aplicação:
 ```bash
-npm install
+mvn clean package
+mvn spring-boot:run
 ```
 
-3. Inicie a aplicação:
-
+3. Acesse a API em:
 ```bash
-npm run dev
+http://localhost:8080
 ```
 
-4. Acesse no navegador:
-
+4. Acesse o console H2 (se configurado):
+```bash
+http://localhost:8080/h2-console
 ```
-http://localhost:5173 (ou outra porta, se for configurada)
+
+JDBC URL típica: `jdbc:h2:mem:testdb`
+
+Usuário e senha conforme sua configuração (ex: sa / password)
+
+---
+
+### Rotas Principais (Endpoints)
+
+Aqui estão alguns dos endpoints principais dessa API:
+
+| Método |	Caminho       |	Descrição                                       |
+|--------|----------------|-------------------------------------------------|
+| POST   | /auth/register	| Registra um novo usuário                        |
+| POST   | /auth/login	  | Faz login e retorna JWT                         |
+| GET    | /auth/me	      | Retorna dados do usuário autenticado (exemplo)  |
+| POST   | /auth/refresh  | (Opcional) Gera um novo token com Refresh Token |
+
+---
+
+### Requisições
+
+---
+
+Exemplo de request de registro
+
+```json
+POST /auth/register
+Content-Type: application/json
+
+{
+	"name": "John Doe",
+  "email": "john.doe@email.com",
+  "password": "RedHotChilliPeppers"
+}
+```
+
+Resposta
+```json
+{
+  "name": "John Doe",
+  "email": "john.doe@email.com",
+  "password": "$2a$12$XYH1DPoER6L8Wv/QuqXWl.z5wdb.iShYdpv3YECrJ1eGw6tY7Bdw2",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
 ```
 
 ---
 
-### CONFIGURAÇÃO PARA INTEGRAR COM A API
+Exemplo de request de login:
 
-Crie um arquivo .env (ou .env.local) baseado no .env.example:
+```json
+POST /auth/login
+Content-Type: application/json
 
-```env
-VITE_API_URL=http://localhost:8080
+{
+  "email": "john.doe@email.com",
+  "password": "RedHotChilliPeppers"
+}
 ```
 
-No código, configure seu cliente HTTP (por exemplo, axios):
-
-```ts
-import axios from "axios";
-
-const api = axios.create({
-	baseURL: import.meta.env.VITE_API_URL,
-});
-
-export default api;
+Resposta
+```json
+{
+  "name": "John Doe",
+  "email": "john.doe@email.com",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
 ```
-
-Use esse api para fazer requisições para endpoints de login, registro, etc.
 
 ---
 
-### DIAGRAMA DE ARQUITETURA (ASCII)
+### Como Usar com o Frontend
 
-```
-+-----------------------+        HTTP         +----------------------------+
-|     Interface React   | <------------------ |        API Backend         |
-|  (Registro / Login)   |                     |    (Spring Boot + JWT)     |
-+-----------+-----------+                     +-----------+----------------+
-            |                                           |
-            |                                           |
-            v                                           v
-+-------------------------+                 +----------------------------+
-|   Auth Context / State  |                 |   Controllers / Services   |
-|  (Guarda token e user)  |                 |   Validações + Segurança   |
-+-------------------------+                 +----------------------------+
-            |                                           |
-            v                                           v
-+-------------------------+                 +----------------------------+
-|    Rotas Protegidas     |                 | Persistent User / Role DB  |
-| (Ex: /dashboard, /home) |                 |       (Spring Data JPA)    |
-+-------------------------+                 +----------------------------+
+Se você tiver um frontend (por exemplo, em React) rodando localmente, configure:
+
+- No backend: habilite CORS para permitir requisições da origem do frontend (ex: http://localhost:3000 ou http://localhost:5173).
+
+- No frontend: configure a base da API, por exemplo, em um arquivo .env:
+
+
+```ini
+REACT_APP_API_URL=http://localhost:8080
 ```
 
-Fluxo:
+Depois use uma biblioteca como axios para fazer chamadas à API:
 
-- Usuário preenche login / registro no React
-- React envia request para a API (login-auth-api)
-- Se autenticação for bem-sucedida, API retorna JWT
-- React salva token no AuthContext + armazenamento local
-- Usuário navega por rotas protegidas
-- Logout limpa token e redireciona para a página de entrada
+```ini
+axios.post(`${process.env.API_URL}/auth/login`, { email, password })
+```
 
----
+### Roadmap / Próximos Passos
 
-MELHORIAS FUTURAS (ROADMAP)
+Aqui vão algumas ideias que eu pretendo implementar no futuro para evoluir esse projeto:
 
-- Implementar refresh token no frontend
-- Feedback visual mais elaborado (modais, alerts)
-- Validação de formulário mais robusta
-- Interface mais bonita com biblioteca UI (Material-UI, Tailwind, etc)
-- Testes (unitários e de integração) para componentes e hooks
-- Internacionalização (i18n)
-- Responsividade (mobile-first design)
-- Deploy em Vercel ou Netlify
+- Implementar refresh token corretamente (salvar no banco, blacklisting de tokens)
+- Adicionar controle de roles/permissões (admin, usuário normal)
+- Enviar e-mail de confirmação no registro
+- Limitar tentativas de login (evitar brute-force)
+- Logout (invalidar token)
+- Logs estruturados (ex: com SLF4J)
+- Documentação da API com Swagger / OpenAPI
 
 ---
 
