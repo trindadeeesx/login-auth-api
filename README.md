@@ -1,150 +1,137 @@
-# Login Auth API
+# Login Auth API (Spring Boot)
 
-Register and Login API made in Java using Spring, H2 Database and JWT.  
-Personal portfolio project demonstrating user registration, authentication, and authorization using bearer tokens.
+API REST de autenticação e registro de usuários, construída com Spring Boot, usando JWT para segurança. Permite registrar novos usuários, realizar login, emitir e validar tokens, e gerenciar sessões.
 
-## Table of contents
-- About
-- Tech stack
-- Features
-- Getting started
-    - Requirements
-    - Configuration
-    - Run
-- API (example endpoints)
-- Usage examples (curl)
-- H2 Console
-- Notes & Security
-- License
-- Author
+---
 
-## About
-This is a small, focused Spring-based API that implements:
-- User registration (save user with hashed password)
-- User login (issue JWT)
-- Bearer-token authorization for protected endpoints
+## SOBRE O PROJETO
 
-It's a personal project intended for portfolio use and learning/explaining common auth patterns (Spring, JWT).
+Esse projeto foi criado para treino e portfólio, com o objetivo de demonstrar habilidades em backend Java, autenticação segura e estruturação de uma API escalável. É ideal para mostrar para recrutadores ou usar como base para aplicações mais complexas.
 
-## Tech stack
-- Java (11+ recommended)
-- Spring Boot (Web, Security, Data JPA)
-- H2 in-memory database (for quick local development)
-- JWT for stateless authentication
+---
 
-## Features
-- Register new users
-- Login and receive a JWT access token
-- Protect endpoints using "Authorization: Bearer <token>"
-- Simple H2 database for persistence (no external DB required)
-- Example protected endpoint(s) to verify token-based access
+### FUNCIONALIDADES
 
-## Getting started
+- Registro de usuário (signup)
+- Login (signin)
+- Emissão de JWT (access token)
+- Validação de token para proteger rotas
+- Refresh token (se implementado)
+- Exemplo de controle de roles ou permissões
+- Endpoints protegidos apenas para usuários autenticados
+- Uso de banco H2 para armazenamento rápido e simples
 
-### Requirements
-- Java 11 or newer
-- Maven (or the project's build tool if different)
-- Git (optional, to clone this repo)
+### TECNOLOGIAS UTILIZADAS
 
-### Configuration
-Default configuration is suitable for local development using H2. For production-like usage, set a secure JWT secret and appropriate token expiry.
+- Java
+- Spring Boot
+- Spring Web
+- Spring Security
+- Spring Data JPA
+- JWT
+- H2 Database
+- Maven
 
-Typical configurable properties (application.properties / application.yml):
-- jwt.secret (or environment variable JWT_SECRET)
-- jwt.expiration-ms (token lifetime in milliseconds)
+### COMO RODAR O PROJETO
 
-Example (application.properties):
-```
-spring.datasource.url=jdbc:h2:mem:testdb
-spring.datasource.driverClassName=org.h2.Driver
-spring.datasource.username=sa
-spring.datasource.password=
-spring.h2.console.enabled=true
+1. Clonar o repositório:
 
-jwt.secret=change-this-secret-for-prod
-jwt.expiration-ms=3600000
+```bash
+git clone https://github.com/trindadeeesx/login-auth-web.git
+cd login-auth-web
 ```
 
-Set a secure `jwt.secret` before deploying or sharing the service.
+2. Instale as dependencias:
 
-### Run
-From the project root (Maven example):
-```
-# build
-mvn clean package
-
-# run
-mvn spring-boot:run
-# or
-java -jar target/login-auth-api-<version>.jar
+```bash
+npm install
 ```
 
-The API will start on port 3333 unless configured otherwise.
+3. Inicie a aplicação:
 
-## API (example endpoints)
-The exact routes in your implementation may vary — adjust these examples to match the project's controllers.
-
-- POST /auth/register
-    - body: { "name": "user complete name", "email": "user@example.com", "password": "secret" }
-
-- POST /auth/login
-    - body: { "email": "email@email.com", "password": "secret" }
-    - response: { "name": "user complete name", "email": "email@email.com", "token": "<jwt>" }
-
-- GET /users (example protected endpoint)
-    - header: Authorization: Bearer <jwt>
-    - response: user info if token valid
-
-H2 Console (dev): /h2-console
-
-## Usage examples (curl)
-
-Register:
-```
-curl -X POST http://localhost:3333/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"john","email":"john@doe.com","password":"redhotchilipeppers"}'
+```bash
+npm run dev
 ```
 
-Login:
+4. Acesse no navegador:
+
 ```
-curl -X POST http://localhost:3333/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"john@doe.com","password":"redhotchilipeppers"}'
-```
-Sample response:
-```
-{
-  "name": "john",
-  "email": "john@doe.com"
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
+http://localhost:5173 (ou outra porta, se for configurada)
 ```
 
-Access protected route:
+---
+
+### CONFIGURAÇÃO PARA INTEGRAR COM A API
+
+Crie um arquivo .env (ou .env.local) baseado no .env.example:
+
+```env
+VITE_API_URL=http://localhost:8080
 ```
-curl -X GET http://localhost:3333/users \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+No código, configure seu cliente HTTP (por exemplo, axios):
+
+```ts
+import axios from "axios";
+
+const api = axios.create({
+	baseURL: import.meta.env.VITE_API_URL,
+});
+
+export default api;
 ```
 
-## H2 Console
-If enabled (application.properties), visit:
-http://localhost:3333/h2-console  
-JDBC URL: jdbc:h2:mem:testdb  
-User: sa  
-Password: (empty)
+Use esse api para fazer requisições para endpoints de login, registro, etc.
 
-## Notes & Security
-- This project is intended for learning and portfolio purposes.
-- For production:
-    - Use a strong jwt.secret stored securely (not in source control).
-    - Use HTTPS to protect tokens in transit.
-    - Consider refresh tokens, token revocation/blacklist, and strict CORS and CSRF policies as needed.
-    - Use a persistent database rather than H2 in-memory.
-    - Harden Spring Security configuration and exception handling.
+---
 
-## License
-MIT — see LICENSE file (or add one if you want to explicitly license this repo).
+### DIAGRAMA DE ARQUITETURA (ASCII)
 
-## Author
-trindadeeesx — personal project / portfolio
+```
++-----------------------+        HTTP         +----------------------------+
+|     Interface React   | <------------------ |        API Backend         |
+|  (Registro / Login)   |                     |    (Spring Boot + JWT)     |
++-----------+-----------+                     +-----------+----------------+
+            |                                           |
+            |                                           |
+            v                                           v
++-------------------------+                 +----------------------------+
+|   Auth Context / State  |                 |   Controllers / Services   |
+|  (Guarda token e user)  |                 |   Validações + Segurança   |
++-------------------------+                 +----------------------------+
+            |                                           |
+            v                                           v
++-------------------------+                 +----------------------------+
+|    Rotas Protegidas     |                 | Persistent User / Role DB  |
+| (Ex: /dashboard, /home) |                 |       (Spring Data JPA)    |
++-------------------------+                 +----------------------------+
+```
+
+Fluxo:
+
+- Usuário preenche login / registro no React
+- React envia request para a API (login-auth-api)
+- Se autenticação for bem-sucedida, API retorna JWT
+- React salva token no AuthContext + armazenamento local
+- Usuário navega por rotas protegidas
+- Logout limpa token e redireciona para a página de entrada
+
+---
+
+MELHORIAS FUTURAS (ROADMAP)
+
+- Implementar refresh token no frontend
+- Feedback visual mais elaborado (modais, alerts)
+- Validação de formulário mais robusta
+- Interface mais bonita com biblioteca UI (Material-UI, Tailwind, etc)
+- Testes (unitários e de integração) para componentes e hooks
+- Internacionalização (i18n)
+- Responsividade (mobile-first design)
+- Deploy em Vercel ou Netlify
+
+---
+
+## Autor
+
+Trindade — Desenvolvedor Back-End
+GitHub: https://github.com/trindadeeesx
